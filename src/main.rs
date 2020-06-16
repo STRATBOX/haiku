@@ -1,5 +1,5 @@
 // dependencies
-use log::info;
+use log::{info, debug};
 use actix_web::{App, HttpServer, web};
 use actix_web::middleware::{Compress, Logger};
 use mongodb::{Client, options::ClientOptions};
@@ -11,24 +11,35 @@ use dotenv::dotenv;
 mod api;
 mod models;
 mod repository;
-// mod service;
 
 use repository::UserRepository;
-// use service::UserService;
-
+// create serices container
 pub struct Services {
     users: UserRepository
 }
 
+// create servoce instantiation methods
 impl Services {
+    // instatiates a service with new database repo
     fn new(users: UserRepository) -> Self {
         Self { users }
     }
 }
 
-
+// create app state to hold Services
 pub struct AppState {
     services: Services
+}
+
+
+// create config struct for debugging 
+#[derive(Debug)]
+pub struct Config {
+    host: String,
+    port: String,
+    mongo_uri: String,
+    database: String,
+    collection: String
 }
 
 #[actix_rt::main]
@@ -41,6 +52,17 @@ async fn main() -> io::Result<()>{
     let mongo_uri = env::var("MONGO_LOCAL").expect("Database URI not set");
     let database = env::var("DATABASE").expect("Database not set");
     let collection = env::var("COLLECTION").expect("Collection name not set");
+
+    // create and output d
+    let c = Config {
+        host: host.to_string(),
+        port: port.to_string(),
+        mongo_uri: mongo_uri.to_string(),
+        database: database.to_string(),
+        collection: collection.to_string()
+    };
+
+    debug!("DEBUG {:#?}", c);
     // systemd/catflap socket activation
     let mut listenfd = ListenFd::from_env();
     
