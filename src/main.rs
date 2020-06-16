@@ -1,5 +1,5 @@
 // dependencies
-use log::{info, debug};
+use log::info;
 use actix_web::{App, HttpServer, web};
 use actix_web::middleware::{Compress, Logger};
 use mongodb::{Client, options::ClientOptions};
@@ -31,17 +31,6 @@ pub struct AppState {
     services: Services
 }
 
-
-// create config struct for debugging 
-#[derive(Debug)]
-pub struct Config {
-    host: String,
-    port: String,
-    mongo_uri: String,
-    database: String,
-    collection: String
-}
-
 #[actix_rt::main]
 async fn main() -> io::Result<()>{
     dotenv().ok();
@@ -53,16 +42,6 @@ async fn main() -> io::Result<()>{
     let database = env::var("DATABASE").expect("Database not set");
     let collection = env::var("COLLECTION").expect("Collection name not set");
 
-    // create and output d
-    let c = Config {
-        host: host.to_string(),
-        port: port.to_string(),
-        mongo_uri: mongo_uri.to_string(),
-        database: database.to_string(),
-        collection: collection.to_string()
-    };
-
-    debug!("DEBUG {:#?}", c);
     // systemd/catflap socket activation
     let mut listenfd = ListenFd::from_env();
     
