@@ -2,22 +2,45 @@
 
 Rust microservices, jwt, mongodb and cloudrun
 
-## Prerequisites
+## Running the service as an image
 
-The easiest way to get Cargo is to install the current stable release of **Rust** by using `rustup`.
+This service bundles mongodb and other necessary infrastructure to run locally.
 
-On Linux and macOS systems, this is done as follows:
-
-```sh
-$ curl https://sh.rustup.rs -sSf | sh
-```
-It will download a script, and start the installation. If everything goes well, you’ll see this appear:
+After making code updates, simply start service with the following commands:
 
 ```sh
-Rust is installed now. Great!
+$ docker-compose build
+$ docker-compose up
 ```
 
-## auto reloading
+### performance testing the service
+
+Download and run [autocannon](https://github.com/mcollina/autocannon) with the appropriate parameters.
+
+```sh
+$ autocannon -c 100 -d 5 -p 10 http://0.0.0.0:3000
+Running 5s test @ http://0.0.0.0:3000
+100 connections with 10 pipelining factor
+
+┌─────────┬──────┬──────┬────────┬────────┬─────────┬──────────┬───────────┐
+│ Stat    │ 2.5% │ 50%  │ 97.5%  │ 99%    │ Avg     │ Stdev    │ Max       │
+├─────────┼──────┼──────┼────────┼────────┼─────────┼──────────┼───────────┤
+│ Latency │ 0 ms │ 0 ms │ 119 ms │ 146 ms │ 9.92 ms │ 31.65 ms │ 247.82 ms │
+└─────────┴──────┴──────┴────────┴────────┴─────────┴──────────┴───────────┘
+┌───────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┐
+│ Stat      │ 1%      │ 2.5%    │ 50%     │ 97.5%   │ Avg     │ Stdev   │ Min     │
+├───────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┤
+│ Req/Sec   │ 8163    │ 8163    │ 10391   │ 11183   │ 9898    │ 1129.36 │ 8160    │
+├───────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┤
+│ Bytes/Sec │ 1.78 MB │ 1.78 MB │ 2.27 MB │ 2.44 MB │ 2.16 MB │ 246 kB  │ 1.78 MB │
+└───────────┴─────────┴─────────┴─────────┴─────────┴─────────┴─────────┴─────────┘
+
+Req/Bytes counts sampled once per second.
+
+49k requests in 5.07s, 10.8 MB read
+```
+
+## auto reloading while building locally
 
 For this, we need to install `cargo-watch` and `systemfd`. Both are written in Rust and available on [crates.io](http://crates.io), so we can install them with cargo.
 
