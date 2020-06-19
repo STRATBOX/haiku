@@ -38,7 +38,7 @@ async fn main() -> io::Result<()>{
 
     let host = env::var("HOST").expect("Host not set");
     let port = env::var("PORT").expect("Port not set");
-    let mongo_uri = env::var("MONGO_LOCAL").expect("Database URI not set");
+    let mongo_uri = env::var("MONGO_URI").expect("Database URI not set");
     let database = env::var("DATABASE").expect("Database not set");
     let collection = env::var("COLLECTION").expect("Collection name not set");
 
