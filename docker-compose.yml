@@ -1,4 +1,6 @@
 version: '3.7'
+volumes:
+  datastore:
 services:
   haiku:
     # image: haiku:0.1.0
@@ -34,7 +36,35 @@ services:
   ratel:
     image: dgraph/dgraph:latest
     ports:
-      - 8001:8000
+      - 8001:8001
     command: dgraph-ratel
-volumes:
-  datastore:
+  pulsar:
+    image: apachepulsar/pulsar:2.5.2
+    command: bin/pulsar standalone
+    # hostname: pulsar
+    ports:
+      - "8082:8082"
+      - "6650:6650"
+    restart: unless-stopped
+    volumes:
+      - datastore:/data/db
+      # - "./data/:/pulsar/data"
+  dashboard:
+    image: apachepulsar/pulsar-manager:v0.1.0
+    ports:
+      - "9527:9527"
+    depends_on:
+      - pulsar
+    links:
+      - pulsar
+    volumes:
+      - datastore:/data
+      # - "./data/:/data"
+    environment:
+      REDIRECT_HOST: "http://127.0.0.1"
+      REDIRECT_PORT: "9527"
+      DRIVER_CLASS_NAME: "org.postgresql.Driver"
+      URL: "jdbc:postgresql://127.0.0.1:5432/pulsar_manager"
+      USERNAME: "pulsar"
+      PASSWORD: "pulsar"
+      LOG_LEVEL: "DEBUG"
