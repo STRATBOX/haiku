@@ -8,10 +8,33 @@ services:
     volumes:
       - $PWD/.env:/.env
   mongodb:
-      image: mongo:latest
-      ports:
-        - 27017:27017
-      volumes:
-        - mongodb_data_container:/data/db
+    image: mongo:latest
+    ports:
+      - 27017:27017
+    volumes:
+      - datastore:/data/db
+  zero:
+    image: dgraph/dgraph:latest
+    volumes:
+      - datastore:/dgraph
+    ports:
+      - 5080:5080
+      - 6080:6080
+    restart: on-failure
+    command: dgraph zero --my=zero:5080
+  alpha:
+    image: dgraph/dgraph:latest
+    volumes:
+      - datastore:/dgraph
+    ports:
+      - 8080:8080
+      - 9080:9080
+    restart: on-failure
+    command: dgraph alpha --my=alpha:7080 --lru_mb=2048 --zero=zero:5080
+  ratel:
+    image: dgraph/dgraph:latest
+    ports:
+      - 8001:8000
+    command: dgraph-ratel
 volumes:
-  mongodb_data_container:
+  datastore:
