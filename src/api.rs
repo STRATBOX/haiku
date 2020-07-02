@@ -1,6 +1,6 @@
 // dependencies
-use actix_web::{HttpRequest, HttpResponse, Responder, web};
-use chrono::{Utc};
+use actix_web::{web, HttpRequest, HttpResponse, Responder};
+use chrono::Utc;
 use ulid::Ulid;
 
 // module declarations
@@ -13,18 +13,12 @@ pub async fn ping(_req: HttpRequest) -> impl Responder {
         id: Ulid::new().to_string().to_lowercase(),
         service: String::from("haiku-build"),
         message: String::from("running..."),
-        created_on: Utc::now().timestamp_millis()
+        created_on: Utc::now().timestamp_millis(),
     })
 }
 
-pub async fn signup(
-    state: web::Data<AppState>,
-    person: web::Json<NewPerson>
-) -> impl Responder {
-
-    let result = web::block(move || 
-        state.services.users.create(person.into_inner())
-    ).await;
+pub async fn signup(state: web::Data<AppState>, person: web::Json<NewPerson>) -> impl Responder {
+    let result = web::block(move || state.services.users.create(person.into_inner())).await;
 
     match result {
         Ok(data) => HttpResponse::Ok().json(data.inserted_id),

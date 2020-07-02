@@ -1,11 +1,11 @@
 // dependencies
-use log::info;
-use actix_web::{App, HttpServer, web};
 use actix_web::middleware::{Compress, Logger};
-use mongodb::{Client, options::ClientOptions};
-use listenfd::ListenFd;
-use std::{env, io};
+use actix_web::{web, App, HttpServer};
 use dotenv::dotenv;
+use listenfd::ListenFd;
+use log::info;
+use mongodb::{options::ClientOptions, Client};
+use std::{env, io};
 
 // module declarations
 mod api;
@@ -13,14 +13,14 @@ mod models;
 mod repository;
 
 use repository::UserRepository;
-// create serices container
+// create services container
 pub struct Services {
-    users: UserRepository
+    users: UserRepository,
 }
 
-// create servoce instantiation methods
+// create service instantiation methods
 impl Services {
-    // instatiates a service with new database repo
+    // instantiates a service with new database repository
     fn new(users: UserRepository) -> Self {
         Self { users }
     }
@@ -28,11 +28,11 @@ impl Services {
 
 // create app state to hold Services
 pub struct AppState {
-    services: Services
+    services: Services,
 }
 
 #[actix_rt::main]
-async fn main() -> io::Result<()>{
+async fn main() -> io::Result<()> {
     dotenv().ok();
     env_logger::init();
 
@@ -44,13 +44,13 @@ async fn main() -> io::Result<()>{
 
     // systemd/catflap socket activation
     let mut listenfd = ListenFd::from_env();
-    
+
     let options = ClientOptions::parse(mongo_uri.as_str()).unwrap();
     let client = Client::with_options(options).unwrap();
     let db = client.database(database.as_str());
     let users = db.collection(collection.as_str());
     // println!("[INFO]: {:?}", mongo_uri.as_str());
-    
+
     // setup actix-web server
     let mut server = HttpServer::new(move || {
         let services = Services::new(UserRepository::new(users.clone()));
@@ -61,10 +61,10 @@ async fn main() -> io::Result<()>{
             .route("/", web::get().to(api::ping))
             .route("/signup", web::post().to(api::signup))
     });
-    
+
     server = match listenfd.take_tcp_listener(0)? {
         Some(listener) => server.listen(listener)?,
-        None => server.bind(format!("{}:{}", host, port))?
+        None => server.bind(format!("{}:{}", host, port))?,
     };
 
     info!("Starting server");
